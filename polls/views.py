@@ -5,6 +5,7 @@ from django.shortcuts import get_object_or_404
 from django.http import HttpResponse
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework import status
 
 from .models import Question, Choice
 from .serializers import QuestionSerializer, ChoiceSerializer, VoteSerializer
@@ -38,10 +39,33 @@ class QuestionDetail(generics.RetrieveDestroyAPIView):
     serializer_class = QuestionSerializer
 
 
+# class ChoiceList(generics.ListCreateAPIView):
+#     queryset = Choice.objects.all()
+#     serializer_class = ChoiceSerializer
+
+
+# class CreateVote(generics.CreateAPIView):
+#     serializer_class = VoteSerializer
+
 class ChoiceList(generics.ListCreateAPIView):
-    queryset = Choice.objects.all()
+    def get_queryset(self):
+        queryset = Choice.objects.filter(question_id=self.kwargs['pk'])
+        return queryset
     serializer_class = ChoiceSerializer
 
 
-class CreateVote(generics.CreateAPIView):
+class CreateVote(APIView):
     serializer_class = VoteSerializer
+
+    def post(self, request, pk, choice_pk):
+        voted_by = request.data.get('voted_by')
+        data = {'choice': choice_pk, 'question': pk, 'voted_by': voted_by}
+        serializer = VoteSerializer(data=data)
+        if serializer.is_valid():
+            vote = serializer.save()
+            print('成功')
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            print('失败')
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
