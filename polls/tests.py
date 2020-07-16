@@ -6,7 +6,7 @@ from django.test import TestCase
 
 from django.test import TestCase
 from django.utils import timezone
-from rest_framework.test import APITestCase, APIRequestFactory
+from rest_framework.test import APITestCase, APIRequestFactory, APIClient
 from polls import views
 from django.contrib.auth import get_user_model
 from rest_framework.authtoken.models import Token
@@ -41,9 +41,11 @@ class QuestionModelTests(TestCase):
 
 class TestQuestion(APITestCase):
     def setUp(self):
+        self.client = APIClient()
         self.factory = APIRequestFactory()
         self.view = views.QuestionViewSet.as_view({'get': 'list'})
-        self.uri = '/questions/'
+        # self.uri = '/questions/'
+        self.uri = '/polls/questions/'
         self.user = self.setup_user()
         self.token = Token.objects.create(user=self.user)
         self.token.save()
@@ -60,6 +62,19 @@ class TestQuestion(APITestCase):
         response = self.view(request)
         self.assertEqual(response.status_code, 200,
                          '期望Code 200, 然而收到 {0} .'.format(response.status_code))
-        return super().setUp()
 
+    def test_list2(self):
+        self.client.login(username="test", password="test")
+        response = self.client.get(self.uri)
+        self.assertEqual(response.status_code, 200,
+                         '期望Code 200, 然而收到 {0} .'.format(response.status_code))
 
+    def test_create(self):
+        self.client.login(username='test', password='test')
+        params = {
+            "question_text": "测试test_create()生成的问题1",
+            "created_by": 1
+        }
+        response = self.client.post(self.uri, params)
+        self.assertEqual(response.status_code, 201,
+                         '期望Code 201, 然而收到 {0} .'.format(response.status_code))
