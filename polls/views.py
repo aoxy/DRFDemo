@@ -11,6 +11,7 @@ from .models import Question, Choice
 from .serializers import QuestionSerializer, ChoiceSerializer, VoteSerializer, UserSerializer
 from rest_framework import generics
 from django.contrib.auth import authenticate
+from rest_framework.exceptions import PermissionDenied
 
 
 def index(request):
@@ -43,6 +44,12 @@ class QuestionViewSet(viewsets.ModelViewSet):
     queryset = Question.objects.all()
     serializer_class = QuestionSerializer
 
+    def destroy(self, request, *args, **kwargs):
+        question = Question.objects.get(pk=self.kwargs['pk'])
+        if not request.user == question.created_by:
+            raise PermissionDenied("你不能删除这个问题")
+        return super().destroy(request, *args, **kwargs)
+
 # class ChoiceList(generics.ListCreateAPIView):
 #     queryset = Choice.objects.all()
 #     serializer_class = ChoiceSerializer
@@ -56,6 +63,12 @@ class ChoiceList(generics.ListCreateAPIView):
         queryset = Choice.objects.filter(question_id=self.kwargs['pk'])
         return queryset
     serializer_class = ChoiceSerializer
+
+    def post(self, request, *args, **kwargs):
+        question = Question.objects.get(pk=self.kwargs['pk'])
+        if not request.user == question.created_by:
+            raise PermissionDenied("你不能为这个问题创建选项")
+        return super().post(request, *args, **kwargs)
 
 
 class CreateVote(APIView):
