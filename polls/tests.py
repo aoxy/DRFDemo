@@ -44,10 +44,22 @@ class TestQuestion(APITestCase):
         self.factory = APIRequestFactory()
         self.view = views.QuestionViewSet.as_view({'get': 'list'})
         self.uri = '/questions/'
+        self.user = self.setup_user()
+        self.token = Token.objects.create(user=self.user)
+        self.token.save()
+
+    @staticmethod
+    def setup_user():
+        User = get_user_model()
+        return User.objects.create_user('test', email='testuser@test.com', password='test')
 
     def test_list(self):
-        request = self.factory.get(self.uri)
+        request = self.factory.get(
+            self.uri, HTTP_AUTHORIZATION='Token {}'.format(self.token.key))
+        request.user = self.user
         response = self.view(request)
         self.assertEqual(response.status_code, 200,
                          '期望Code 200, 然而收到 {0} .'.format(response.status_code))
         return super().setUp()
+
+
