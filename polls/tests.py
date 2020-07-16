@@ -6,7 +6,10 @@ from django.test import TestCase
 
 from django.test import TestCase
 from django.utils import timezone
-
+from rest_framework.test import APITestCase, APIRequestFactory
+from polls import views
+from django.contrib.auth import get_user_model
+from rest_framework.authtoken.models import Token
 from .models import Question
 
 
@@ -34,3 +37,17 @@ class QuestionModelTests(TestCase):
         time = timezone.now()-datetime.timedelta(hours=23, minutes=59, seconds=59)
         recent_question = Question(pub_date=time)
         self.assertIs(recent_question.was_published_recently(), True)
+
+
+class TestQuestion(APITestCase):
+    def setUp(self):
+        self.factory = APIRequestFactory()
+        self.view = views.QuestionViewSet.as_view({'get': 'list'})
+        self.uri = '/questions/'
+
+    def test_list(self):
+        request = self.factory.get(self.uri)
+        response = self.view(request)
+        self.assertEqual(response.status_code, 200,
+                         '期望Code 200, 然而收到 {0} .'.format(response.status_code))
+        return super().setUp()
