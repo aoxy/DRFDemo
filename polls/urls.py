@@ -1,7 +1,7 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 
-from .views import index, QuestionViewSet, ChoiceList, CreateVote, UserCreate
+from .views import index, QuestionViewSet, ChoiceList, CreateVote, UserCreate, LoginView
 
 # urlpatterns = [
 #     path('', index, name='index'),
@@ -19,5 +19,6 @@ urlpatterns = [
     path('questions/<int:pk>/choices/', ChoiceList.as_view(), name="choice_list"),
     path('questions/<int:pk>/choices/<int:choice_pk>/vote/',
          CreateVote.as_view(), name="create_vote"),
-    path('users/', UserCreate.as_view(), name="user_create")
+    path('users/', UserCreate.as_view(), name="user_create"),
+    path('login/', LoginView.as_view(), name="login")
 ]
