@@ -5,10 +5,10 @@ from django.shortcuts import get_object_or_404
 from django.http import HttpResponse
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import status
+from rest_framework import status, viewsets
 
 from .models import Question, Choice
-from .serializers import QuestionSerializer, ChoiceSerializer, VoteSerializer
+from .serializers import QuestionSerializer, ChoiceSerializer, VoteSerializer, UserSerializer
 from rest_framework import generics
 
 
@@ -29,15 +29,18 @@ def index(request):
 #         data = QuestionSerializer(question).data
 #         return Response(data)
 
-class QuestionList(generics.ListCreateAPIView):
+# class QuestionList(generics.ListCreateAPIView):
+#     queryset = Question.objects.all()
+#     serializer_class = QuestionSerializer
+
+
+# class QuestionDetail(generics.RetrieveDestroyAPIView):
+#     queryset = Question.objects.all()
+#     serializer_class = QuestionSerializer
+
+class QuestionViewSet(viewsets.ModelViewSet):
     queryset = Question.objects.all()
     serializer_class = QuestionSerializer
-
-
-class QuestionDetail(generics.RetrieveDestroyAPIView):
-    queryset = Question.objects.all()
-    serializer_class = QuestionSerializer
-
 
 # class ChoiceList(generics.ListCreateAPIView):
 #     queryset = Choice.objects.all()
@@ -69,3 +72,6 @@ class CreateVote(APIView):
             print('失败')
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
+class UserCreate(generics.CreateAPIView):
+    serializer_class = UserSerializer
